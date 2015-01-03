@@ -1,0 +1,113 @@
+#
+#  Crea varios contenedores, el principal es un Servidor squid escuchando en el 
+#  puerto 80 del Host. Dependiendo de la página solicitada (sobre la base del
+#  nombre dns) hace proxy inverso y redirige la petición al servidor apropiado
+#
+#                                                         +-------+  +-----------+
+#                                                         |fluentd|  |   mysql   |
+#                                                         +-------+  +-----------+
+#                                                             |         |
+#                                             +-----------+   |         |
+#                    +-- www.tld.org -->  80: | wordpress |---+---------+
+#      +-------+    /                         +-----------+            
+#  80: | squid |---+                                                      
+#      +-------+   |
+#                  |\                         +-------------------+     
+#                  | +-- blog.tld.org --> 80: | apache/nibbleblog |     
+#                  |                          +-------------------+     
+#                   \                          +--------+
+#                    +-- test.tld.org -->  80: | apache |
+#                                              +--------+
+#
+#
+
+##  ===========================================================================
+#   blog.tld.org
+#
+blog:
+
+  image: luispa/base-apache
+
+  expose:
+   - "80"
+
+  volumes:
+   - "/Apps/data/web/blog.tld.org:/var/www/html"
+   - "/etc/localtime:/etc/localtime:ro"
+
+
+  command: /usr/sbin/apache2 -D FOREGROUND
+
+##  ===========================================================================
+#   test.tld.org
+#
+test:
+
+  image: luispa/base-apache
+
+  expose:
+   - "80"
+
+  volumes:
+   - "/Apps/data/web/test.tld.org:/var/www/html"
+   - "/etc/localtime:/etc/localtime:ro"
+
+
+  command: /usr/sbin/apache2 -D FOREGROUND
+
+##  ===========================================================================
+#   www.tld.org (Site principal con wordpress)
+#
+#   Pruebas manuales: 
+#   docker run --rm -t -i --name servicioweb_wordpress_1 -e WP_DB_USER="<RELLENAR>" -e WP_DB_PASS="<RELLENAR>" -e WP_DB_NAME="<RELLENAR>" -e MYSQL_LINK="servidor.dominio.com:33001" -e SQL_ROOT_PASSWORD="<RELLENAR>" -e FLUENTD_LINK="servidor.dominio.com:24224" --expose=80 -v /Apps/data/web/www.luispa.com/wordpress:/var/www/html luispa/base-wordpress /bin/bash
+#
+wordpress:
+  image: luispa/base-wordpress
+
+  environment:   
+    WP_DB_USER:          "<RELLENAR>"
+    WP_DB_PASS:          "<RELLENAR>"
+    WP_DB_NAME:          "<RELLENAR>"
+    MYSQL_LINK:          "servidor.dominio.com:33001"
+    SQL_ROOT_PASSWORD:   "<RELLENAR>"
+    FLUENTD_LINK:        "servidor.dominio.com:24224"
+
+  expose:
+    - "80"
+
+  volumes:
+    - "/Apps/data/web/www.tld.org/wordpress:/var/www/html"
+    - "/etc/localtime:/etc/localtime:ro"
+
+  command: supervisord -n -c /etc/supervisor/supervisord.conf
+
+    
+##  ===========================================================================
+#   Reverse Proxy
+#
+#   Manual: 
+#
+#   docker run --rm -t -i --link servicioweb_blog_1:blog --link servicioweb_test_1:test --link servicioweb_wordpress_1:wordpress -e DISK_CACHE_SIZE=5000 -e MAX_CACHE_OBJECT=1000 -p 80:80 -v /etc/localtime:/etc/localtime:ro -v /Apps/data/web/squid:/var/squid_reverse_vhosts luispa/base-squid /init_squid.py
+
+squid:
+
+  image: luispa/base-squid
+  
+  environment:
+   DISK_CACHE_SIZE: 5000
+   MAX_CACHE_OBJECT: 1000
+
+  ports:
+   - "80:80"
+
+  links:
+   - wordpress
+   - blog
+   - test
+
+  volumes:
+    - "/Apps/data/web/squid:/var/squid_reverse_vhosts"
+    - "/etc/localtime:/etc/localtime:ro"
+  
+  command: /init_squid.py
+
