@@ -6,3 +6,4 @@ Thumbs.db
 \#*\#
 *.autosave
 fig.yml
+.gitignore
