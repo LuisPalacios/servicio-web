@@ -1,0 +1,11 @@
+[Unit]
+Description=Apps
+Wants=network.target rpc-statd.service
+After=network.target rpc-statd.service
+
+[Mount]
+What=panoramix.parchis.org:/Apps
+Where=/Apps
+Type=nfs
+StandardOutput=syslog
+StandardError=syslog

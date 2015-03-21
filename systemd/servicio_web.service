@@ -1,0 +1,12 @@
+[Unit]
+Description=Servicio Web
+After=docker.service servicio_log.service servicio_db_correo.service servicio_db_blog.service Apps.mount
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /Apps/docker/servicio-web/start-fig.sh
+ExecStop=/bin/bash /Apps/docker/servicio-web/stop-fig.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

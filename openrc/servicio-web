@@ -5,12 +5,15 @@
 
 depend() {
     need net
-    #need localmount
-    #need nfsmount
+    need localmount
+    need nfsmount
+    need servicio-db-correo
+    need servicio-db-blog
+    after sshd
 }
 
 start() {
-	ebegin "Arrancando los servidores Web"
+	ebegin "Arrancando servicios: Web, Wordpess"
 
         su luis -c "cd /Apps/docker/servicio-web && /usr/local/bin/fig up -d"
 
@@ -18,7 +21,7 @@ start() {
 }
 
 stop() {
-	ebegin "Parando los servidores Web"
+	ebegin "Parando servicios: Web, Wordpress"
 
         su luis -c "cd /Apps/docker/servicio-web &&  /usr/local/bin/fig stop"
 
