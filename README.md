@@ -46,7 +46,19 @@ Renombra, edita y adapta a tu gusto y necesidades los puertos y los nombres dns.
 Arranca el servicio con el comando siguiente
 
     $ fig up -d
+    
 
+# Personalización
+
+### Volumen
+
+
+Directorio persistente para configurar el Timezone. Crear el directorio /Apps/data/tz y dentro de él crear el fichero timezone. Luego montarlo con -v o con fig.yml
+
+    Montar:
+       "/Apps/data/tz:/config/tz"  
+    Preparar: 
+       $ echo "Europe/Madrid" > /config/tz/timezone
 
 
 # Configuración

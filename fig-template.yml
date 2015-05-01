@@ -33,7 +33,7 @@ blog:
 
   volumes:
    - "/Apps/data/web/blog.tld.org:/var/www/html"
-   - "/etc/localtime:/etc/localtime:ro"
+   - "/Apps/data/tz:/config/tz"
 
 
   command: /usr/sbin/apache2 -D FOREGROUND
@@ -50,7 +50,7 @@ test:
 
   volumes:
    - "/Apps/data/web/test.tld.org:/var/www/html"
-   - "/etc/localtime:/etc/localtime:ro"
+   - "/Apps/data/tz:/config/tz"
 
 
   command: /usr/sbin/apache2 -D FOREGROUND
@@ -77,7 +77,7 @@ wordpress:
 
   volumes:
     - "/Apps/data/web/www.tld.org/wordpress:/var/www/html"
-    - "/etc/localtime:/etc/localtime:ro"
+    - "/Apps/data/tz:/config/tz"
 
   command: supervisord -n -c /etc/supervisor/supervisord.conf
 
@@ -107,7 +107,7 @@ squid:
 
   volumes:
     - "/Apps/data/web/squid:/var/squid_reverse_vhosts"
-    - "/etc/localtime:/etc/localtime:ro"
+    - "/Apps/data/tz:/config/tz"
   
   command: /init_squid.py
 
